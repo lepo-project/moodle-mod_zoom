@@ -113,6 +113,8 @@ class get_meeting_reports extends \core\task\scheduled_task {
         if (empty($starttime)) {
             // Zoom only provides data from 30 days ago.
             $starttime = strtotime('-30 days');
+        } else {
+            $starttime = strtotime('-12 hours', $starttime);
         }
 
         // Zoom requires this format when passing the to and from arguments.
