@@ -133,36 +133,28 @@ if ($available) {
     $buttonhtml .= html_writer::input_hidden_params($aurl);
     $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
-    $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
+    // $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
+
+    if (!$zoom->recurring) {
+        if (!$zoom->exists_on_zoom) {
+            $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
+        } else if ($finished) {
+            $status = get_string('meeting_finished', 'mod_zoom');
+        // } else if ($inprogress) {
+        //     $status = get_string('meeting_started', 'mod_zoom');
+        } else {
+            $status = get_string('meeting_not_started', 'mod_zoom');
+        }
+        $link = html_writer::tag('span', $status, array('style' => 'font-size:20px'));
+    } else {
+        $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
+    }
 }
 
 $title = new html_table_cell($link);
 $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
-
-if ($iszoommanager) {
-    // Only show sessions link to users with edit capability.
-    $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
-    $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
-    $sessions = new html_table_cell($sessionslink);
-    $sessions->colspan = $numcolumns;
-    $table->data[] = array($sessions);
-
-    // Display alternate hosts if they exist.
-    if (!empty($zoom->alternative_hosts)) {
-        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
-    }
-}
-
-// Generate add-to-calendar button if meeting was found and isn't recurring.
-if (!($showrecreate || $zoom->recurring)) {
-    $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
-    $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
-    $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
-    $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, array('target' => '_blank'));
-    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
-}
 
 if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
@@ -173,17 +165,49 @@ if ($zoom->recurring) {
     $table->data[] = array($strduration, format_time($zoom->duration));
 }
 
-$haspassword = (isset($zoom->password) && $zoom->password !== '');
-$strhaspass = ($haspassword) ? $stryes : $strno;
-$table->data[] = array($strpassprotect, $strhaspass);
+if ($iszoommanager) {
+    // Display alternate hosts if they exist.
+    if (!empty($zoom->alternative_hosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    }
 
-if ($userishost && $haspassword || get_config('mod_zoom', 'displaypassword')) {
-    $table->data[] = array($strpassword, $zoom->password);
+    // Only show sessions link to users with edit capability.
+    $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
+    $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
+    $sessions = new html_table_cell($sessionslink);
+    $sessions->colspan = $numcolumns;
+    $table->data[] = array($sessions);
 }
 
-if ($userishost) {
-    $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
+$urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
+$linkall = html_writer::link($urlall, $strall);
+$linktoall = new html_table_cell($linkall);
+$linktoall->colspan = $numcolumns;
+$table->data[] = array($linktoall);
+
+// Generate add-to-calendar button if meeting was found and isn't recurring.
+if (!($showrecreate || $zoom->recurring)) {
+    $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
+    $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
+    $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
+    $buttonhtml = html_writer::link((string) $icallink, $calendarbutton, array('target' => '_blank'));
+    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $buttonhtml);
 }
+
+if (!$zoom->webinar) {
+    // $haspassword = (isset($zoom->password) && $zoom->password !== '');
+    // $strhaspass = ($haspassword) ? $stryes : $strno;
+    $strhaspass = $stryes;
+    $table->data[] = array($strpassprotect, $strhaspass);
+
+    // if ($userishost && $haspassword || get_config('mod_zoom', 'displaypassword')) {
+    //     $table->data[] = array($strpassword, $zoom->password);
+    // }
+}
+
+// if ($userishost) {
+//     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
+// }
 
 if ($hostuser) {
     $hostmoodleuser = new stdClass();
@@ -197,11 +221,11 @@ if ($hostuser) {
 }
 
 if (!$zoom->webinar) {
-    $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
-    $table->data[] = array($strjoinbeforehost, $strjbh);
+    // $strjbh = ($zoom->option_jbh) ? $stryes : $strno;
+    // $table->data[] = array($strjoinbeforehost, $strjbh);
 
-    $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
-    $table->data[] = array($strwwaitingroom, $strwr);
+    // $strwr = ($zoom->option_waiting_room) ? $stryes : $strno;
+    // $table->data[] = array($strwwaitingroom, $strwr);
 
     $strvideohost = ($zoom->option_host_video) ? $stryes : $strno;
     $table->data[] = array($strstartvideohost, $strvideohost);
@@ -210,38 +234,18 @@ if (!$zoom->webinar) {
     $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 }
 
-$table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
-$table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
-$table->data[] = array($strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno);
+// $table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
+// $table->data[] = array($strmuteuponentry, ($zoom->option_mute_upon_entry) ? $stryes : $strno);
+// $table->data[] = array($strauthenticatedusers, ($zoom->option_authenticated_users) ? $stryes : $strno);
 
-if (!$zoom->recurring) {
-    if (!$zoom->exists_on_zoom) {
-        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
-    } else if ($finished) {
-        $status = get_string('meeting_finished', 'mod_zoom');
-    } else if ($inprogress) {
-        $status = get_string('meeting_started', 'mod_zoom');
-    } else {
-        $status = get_string('meeting_not_started', 'mod_zoom');
-    }
-
-    $table->data[] = array($strstatus, $status);
-}
-
-if (!empty($meetinginvite)) {
-    $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
-    $showbutton = html_writer::tag('button', $strmeetinginviteshow,
-        array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
-    $meetinginvitebody = html_writer::div($meetinginvitetext, '',
-        array('id' => 'show-more-body', 'style' => 'display: none;'));
-    $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
-}
-
-$urlall = new moodle_url('/mod/zoom/index.php', array('id' => $course->id));
-$linkall = html_writer::link($urlall, $strall);
-$linktoall = new html_table_cell($linkall);
-$linktoall->colspan = $numcolumns;
-$table->data[] = array($linktoall);
+// if (!empty($meetinginvite)) {
+//     $meetinginvitetext = str_replace("\r\n", '<br/>', $meetinginvite);
+//     $showbutton = html_writer::tag('button', $strmeetinginviteshow,
+//         array('id' => 'show-more-button', 'class' => 'btn btn-link pt-0 pl-0'));
+//     $meetinginvitebody = html_writer::div($meetinginvitetext, '',
+//         array('id' => 'show-more-body', 'style' => 'display: none;'));
+//     $table->data[] = array($strmeetinginvite, html_writer::div($showbutton . $meetinginvitebody, ''));
+// }
 
 echo html_writer::table($table);
 

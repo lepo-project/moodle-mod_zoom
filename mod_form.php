@@ -169,53 +169,54 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
         // Validation in validation(). Default to one hour.
-        $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
+        // $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
+        $mform->setDefault('duration', array('number' => 100, 'timeunit' => 60));
         // Disable for recurring meetings.
         $mform->disabledIf('duration', 'recurring', 'checked');
 
         // Add recurring.
-        $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
-        $mform->setDefault('recurring', $config->defaultrecurring);
-        $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
+        // $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'));
+        // $mform->setDefault('recurring', $config->defaultrecurring);
+        // $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
-        if ($isnew) {
-            // Add webinar, disabled if the user cannot create webinars.
-            $webinarattr = null;
-            if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
-                $webinarattr = array('disabled' => true, 'group' => null);
-            }
-            $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
-            $mform->setDefault('webinar', 0);
-            $mform->addHelpButton('webinar', 'webinar', 'zoom');
-        } else if ($this->current->webinar) {
-            $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
-        } else {
-            $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
-        }
+        // if ($isnew) {
+        //     // Add webinar, disabled if the user cannot create webinars.
+        //     $webinarattr = null;
+        //     if (!$service->_get_user_settings($zoomuser->id)->feature->webinar) {
+        //         $webinarattr = array('disabled' => true, 'group' => null);
+        //     }
+        //     $mform->addElement('advcheckbox', 'webinar', get_string('webinar', 'zoom'), '', $webinarattr);
+        //     $mform->setDefault('webinar', 0);
+        //     $mform->addHelpButton('webinar', 'webinar', 'zoom');
+        // } else if ($this->current->webinar) {
+        //     $mform->addElement('html', get_string('webinar_already_true', 'zoom'));
+        // } else {
+        //     $mform->addElement('html', get_string('webinar_already_false', 'zoom'));
+        // }
 
         // Deals with password manager issues.
         if (isset($this->current->password)) {
             $this->current->meetingcode = $this->current->password;
             unset($this->current->password);
         }
-        // Add password.
-        $mform->addElement('text', 'meetingcode', get_string('password', 'zoom'), array('maxlength' => '10'));
-        $mform->setType('meetingcode', PARAM_TEXT);
-        // Check password uses valid characters.
-        $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
-        $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
-        $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
-        $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
-        $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
+        // // Add password.
+        // $mform->addElement('text', 'meetingcode', get_string('password', 'zoom'), array('maxlength' => '10'));
+        // $mform->setType('meetingcode', PARAM_TEXT);
+        // // Check password uses valid characters.
+        // $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
+        // $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
+        // $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
+        // $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
+        // $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
 
-        // Add password requirement prompt.
-        $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));
+        // // Add password requirement prompt.
+        // $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));
 
-        if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
-            $mform->setDefault('requirepasscode', 0);
-        } else {
-            $mform->setDefault('requirepasscode', 1);
-        }
+        // if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
+        //     $mform->setDefault('requirepasscode', 0);
+        // } else {
+        //     $mform->setDefault('requirepasscode', 1);
+        // }
 
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
@@ -233,33 +234,33 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->disabledIf('option_participants_video', 'webinar', 'checked');
 
         // Add audio options.
-        $mform->addGroup(array(
-            $mform->createElement('radio', 'option_audio', '', get_string('audio_telephony', 'zoom'), ZOOM_AUDIO_TELEPHONY),
-            $mform->createElement('radio', 'option_audio', '', get_string('audio_voip', 'zoom'), ZOOM_AUDIO_VOIP),
-            $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH)
-        ), null, get_string('option_audio', 'zoom'));
-        $mform->setDefault('option_audio', $config->defaultaudiooption);
+        // $mform->addGroup(array(
+        //     $mform->createElement('radio', 'option_audio', '', get_string('audio_telephony', 'zoom'), ZOOM_AUDIO_TELEPHONY),
+        //     $mform->createElement('radio', 'option_audio', '', get_string('audio_voip', 'zoom'), ZOOM_AUDIO_VOIP),
+        //     $mform->createElement('radio', 'option_audio', '', get_string('audio_both', 'zoom'), ZOOM_AUDIO_BOTH)
+        // ), null, get_string('option_audio', 'zoom'));
+        // $mform->setDefault('option_audio', $config->defaultaudiooption);
 
-        $mform->addElement('advcheckbox', 'option_mute_upon_entry', get_string('option_mute_upon_entry', 'mod_zoom'));
-        $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
-        $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
+        // $mform->addElement('advcheckbox', 'option_mute_upon_entry', get_string('option_mute_upon_entry', 'mod_zoom'));
+        // $mform->setDefault('option_mute_upon_entry', $config->defaultmuteuponentryoption);
+        // $mform->addHelpButton('option_mute_upon_entry', 'option_mute_upon_entry', 'mod_zoom');
 
         // Add meeting options. Make sure we pass $appendName as false
         // so the options aren't nested in a 'meetingoptions' array.
-        $mform->addGroup(array(
-            // Join before host.
-            $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
-        ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
-        $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
+        // $mform->addGroup(array(
+        //     // Join before host.
+        //     $mform->createElement('advcheckbox', 'option_jbh', '', get_string('option_jbh', 'zoom'))
+        // ), 'meetingoptions', get_string('meetingoptions', 'zoom'), null, false);
+        // $mform->setDefault('option_jbh', $config->defaultjoinbeforehost);
 
-        $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
-        $mform->disabledIf('meetingoptions', 'webinar', 'checked');
+        // $mform->addHelpButton('meetingoptions', 'meetingoptions', 'zoom');
+        // $mform->disabledIf('meetingoptions', 'webinar', 'checked');
 
-        $mform->addElement('advcheckbox', 'option_waiting_room', get_string('option_waiting_room', 'mod_zoom'));
-        $mform->setDefault('option_waiting_room', $config->defaultwaitingroomoption);
+        // $mform->addElement('advcheckbox', 'option_waiting_room', get_string('option_waiting_room', 'mod_zoom'));
+        // $mform->setDefault('option_waiting_room', $config->defaultwaitingroomoption);
 
-        $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
-        $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
+        // $mform->addElement('advcheckbox', 'option_authenticated_users', get_string('option_authenticated_users', 'mod_zoom'));
+        // $mform->setDefault('option_authenticated_users', $config->defaultauthusersoption);
 
         // Add Schedule for if current user is able to.
         // Check if the size is greater than 1 because we add the editing/creating user by default.
@@ -321,10 +322,10 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $errors['start_time'] = get_string('err_start_time_past', 'zoom');
             }
 
-            // Make sure duration is positive and no more than 150 hours.
+            // Make sure duration is positive and no more than 24 hours.
             if ($data['duration'] <= 0) {
                 $errors['duration'] = get_string('err_duration_nonpositive', 'zoom');
-            } else if ($data['duration'] > 150 * 60 * 60) {
+            } else if ($data['duration'] > 24 * 60 * 60) {
                 $errors['duration'] = get_string('err_duration_too_long', 'zoom');
             }
         }

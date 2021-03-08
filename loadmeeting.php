@@ -66,7 +66,8 @@ if ($userishost) {
         zoom_grade_item_update($zoom, $grades);
     }
 
-    $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+    // $nexturl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));
+    $nexturl = new moodle_url($zoom->join_url, array('uname' => $USER->firstname . ' ' . $USER->lastname));
 }
 
 // Track completion viewed.
